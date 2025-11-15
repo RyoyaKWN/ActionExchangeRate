@@ -84,12 +84,14 @@ def update_page_yen_and_meta(page_id: str, yen_value: float, rate: float, today:
 def main():
     today = datetime.date.today()
 
-    # 月末チェック（毎日回しても、月末以外は何もしない）
-    if not is_last_day_of_month(today):
-        print("Today is not the last day of the month. Exit.")
+    # ★環境変数で強制実行フラグを受け取る
+    force_run = os.getenv("FORCE_INITIAL_RUN", "false").lower() == "true"
+
+    if not is_last_day_of_month(today) and not force_run:
+        print("Today is not the last day of the month and FORCE_INITIAL_RUN is not true. Exit.")
         return
 
-    print("Last day of month. Start FX conversion.")
+    print(f"Start FX conversion. force_run={force_run}, today={today}")
 
     # 1. 為替レート取得
     rate = get_usd_jpy_rate()
@@ -103,7 +105,7 @@ def main():
     for page in pages:
         page_id = page["id"]
         dollar_value = page["properties"]["ドル"]["number"]
-        yen_value = round(dollar_value * rate)  # 四捨五入など好みで
+        yen_value = round(dollar_value * rate)
 
         print(f"Update page {page_id}: {dollar_value} USD -> {yen_value} JPY")
 

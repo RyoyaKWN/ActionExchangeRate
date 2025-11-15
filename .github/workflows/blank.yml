@@ -6,7 +6,13 @@ on:
     # 毎日 15:00 UTC = 日本時間 0:00 に実行
     - cron: '0 15 * * *'
   # 手動実行（テスト用）
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      force_initial_run:
+        description: 'Run even if today is not the last day of month'
+        required: false
+        default: 'false'
+        type: string
 
 jobs:
   run-fx-converter:
@@ -34,5 +40,6 @@ jobs:
           # 環境変数
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+          FORCE_INITIAL_RUN: ${{ github.event.inputs.force_initial_run || 'false' }}
         run: |
           python main.py
