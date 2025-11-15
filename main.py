@@ -5,6 +5,7 @@ import datetime
 
 NOTION_TOKEN = os.environ["NOTION_TOKEN"]
 DATABASE_ID = os.environ["NOTION_DB_ID"]
+FX_API_KEY = os.environ["FX_API_KEY"]  # ★ 追加
 
 NOTION_API_BASE = "https://api.notion.com/v1"
 NOTION_VERSION = "2022-06-28"
@@ -17,19 +18,30 @@ def is_last_day_of_month(date: datetime.date) -> bool:
 
 
 def get_usd_jpy_rate() -> float:
-    url = "https://query1.finance.yahoo.com/v8/finance/chart/USDJPY=X"
-    params = {"interval": "1d", "range": "1d"}
+    """
+    APIキー制の為替APIから USD→JPY レートを取得する。
+    ExchangeRate-API v6。
+    """
+    url = f"https://v6.exchangerate-api.com/v6/{FX_API_KEY}/latest/USD"
 
-    resp = requests.get(url, params=params, timeout=10)
-    resp.raise_for_status()
-    data = resp.json()
-
+    resp = requests.get(url, timeout=10)
     try:
-        price = data["chart"]["result"][0]["meta"]["regularMarketPrice"]
-        return price
-    except Exception:
-        print("API Raw Response:", data)
-        raise RuntimeError("Yahoo Finance response invalid")
+        resp.raise_for_status()
+    except Exception as e:
+        print("HTTP Error:", e)
+        print("Status:", resp.status_code)
+        print("Response text:", resp.text)
+        raise
+
+    data = resp.json()
+    print("FX API Raw Response:", data)  # ログ確認用
+
+    # JPYを取得
+    if data.get("result") != "success":
+        raise RuntimeError(f"FX API error: {data}")
+
+    jpy_rate = data["conversion_rates"]["JPY"]
+    return float(jpy_rate)
 
 
 def query_pages_with_dollar_without_yen():

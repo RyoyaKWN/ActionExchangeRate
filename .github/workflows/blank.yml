@@ -40,6 +40,7 @@ jobs:
           # 環境変数
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+          FX_API_KEY: ${{ secrets.FX_API_KEY }}
           FORCE_INITIAL_RUN: ${{ github.event.inputs.force_initial_run || 'false' }}
         run: |
           python main.py
