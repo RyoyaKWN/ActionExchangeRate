@@ -1,0 +1,38 @@
+name: Notion FX Converter
+
+on:
+  # スケジュール実行
+  schedule:
+    # 毎日 15:00 UTC = 日本時間 0:00 に実行
+    - cron: '0 15 * * *'
+  # 手動実行（テスト用）
+  workflow_dispatch: {}
+
+jobs:
+  run-fx-converter:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) リポジトリのコードをチェックアウト
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2) Python のセットアップ
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # 3) 依存ライブラリのインストール
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      # 4) スクリプト実行
+      - name: Run FX script
+        env:
+          # 環境変数
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DB_ID: ${{ secrets.NOTION_DB_ID }}
+        run: |
+          python main.py
