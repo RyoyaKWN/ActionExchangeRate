@@ -72,8 +72,7 @@ def query_pages_with_dollar_without_yen():
 
 def update_page_yen_and_meta(page_id: str, yen_value: float, rate: float, today: datetime.date):
     """
-    該当ページの「円」「レート」「換算日」を更新
-    ※ プロパティ名はNotionのDBに合わせて変える
+    該当ページの「円」だけを更新する版
     """
     url = f"{NOTION_API_BASE}/pages/{page_id}"
     headers = {
@@ -85,13 +84,17 @@ def update_page_yen_and_meta(page_id: str, yen_value: float, rate: float, today:
     payload = {
         "properties": {
             "円": {"number": yen_value},
-            "レート": {"number": rate},             # 任意（あれば便利）
-            "換算日": {"date": {"start": today.isoformat()}},  # 任意
         }
     }
 
+    print("PATCH payload:", payload)
+
     resp = requests.patch(url, headers=headers, json=payload, timeout=10)
-    resp.raise_for_status()
+
+    if not resp.ok:
+        print("PATCH status:", resp.status_code)
+        print("PATCH response:", resp.text)
+        resp.raise_for_status()
 
 
 def main():
