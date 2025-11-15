@@ -17,18 +17,19 @@ def is_last_day_of_month(date: datetime.date) -> bool:
 
 
 def get_usd_jpy_rate() -> float:
-    """
-    為替レート取得
-    例として exchangerate.host（無料・APIキー不要）を使用
-    """
-    resp = requests.get(
-        "https://api.exchangerate.host/latest",
-        params={"base": "USD", "symbols": "JPY"},
-        timeout=10,
-    )
+    url = "https://query1.finance.yahoo.com/v8/finance/chart/USDJPY=X"
+    params = {"interval": "1d", "range": "1d"}
+
+    resp = requests.get(url, params=params, timeout=10)
     resp.raise_for_status()
     data = resp.json()
-    return data["rates"]["JPY"]
+
+    try:
+        price = data["chart"]["result"][0]["meta"]["regularMarketPrice"]
+        return price
+    except Exception:
+        print("API Raw Response:", data)
+        raise RuntimeError("Yahoo Finance response invalid")
 
 
 def query_pages_with_dollar_without_yen():
